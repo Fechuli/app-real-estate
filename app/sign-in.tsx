@@ -16,7 +16,7 @@ const SignIn = () => {
     if (!loading && isLoggedIn) return <Redirect href="/" />;
 
     if (result) {
-      refetch({});
+      refetch();
     } else {
       Alert.alert("Failed to login");
     }

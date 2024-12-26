@@ -13,7 +13,7 @@ interface GlobalContextType {
   isLoggedIn: boolean;
   user: User | null;
   loading: boolean;
-  refetch: (newParams: Record<string, string | number>) => Promise<void>;
+  refetch: (newParams?: Record<string, string | number> | undefined) => Promise<void>;
 }
 
 const GlobalContext = createContext<GlobalContextType | undefined>(undefined);
@@ -35,6 +35,7 @@ export const GlobalProvider = ({ children }: { children: React.ReactNode }) => {
         isLoggedIn,
         user,
         loading,
+        //@ts-ignore
         refetch,
       }}
     >
