@@ -28,6 +28,7 @@ const Filters = () => {
     >
       {categories.map((item, index) => (
         <TouchableOpacity
+          key={index}
           onPress={() => {
             handleCategoryPress(item.category);
           }}
