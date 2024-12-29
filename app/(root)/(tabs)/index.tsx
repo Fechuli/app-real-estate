@@ -4,6 +4,7 @@ import Search from "@/components/Search";
 import icons from "@/constants/icons";
 import images from "@/constants/images";
 import { useGlobalContext } from "@/lib/global-provider";
+import seed from "@/lib/seed";
 import {
   SafeAreaView,
   Image,
@@ -11,6 +12,7 @@ import {
   Text,
   TouchableOpacity,
   FlatList,
+  Button,
 } from "react-native";
 
 export default function Index() {
@@ -19,6 +21,7 @@ export default function Index() {
 
   return (
     <SafeAreaView className="bg-white h-full">
+        {/* <Button title="Seed" onPress={seed}/> */}
       <FlatList
         data={[1, 2]}
         renderItem={({ item }) => <Card />}
