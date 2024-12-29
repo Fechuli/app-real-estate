@@ -1,16 +1,17 @@
 import {
-  Avatars,
   Client,
   Account,
-  OAuthProvider,
   Databases,
+  OAuthProvider,
+  Avatars,
   Query,
+  Storage,
 } from "react-native-appwrite";
 import * as Linking from "expo-linking";
 import { openAuthSessionAsync } from "expo-web-browser";
 
 export const config = {
-  plarform: "com.backdoor.restate",
+  platform: "com.jsm.restate",
   endpoint: process.env.EXPO_PUBLIC_APPWRITE_ENDPOINT,
   projectId: process.env.EXPO_PUBLIC_APPWRITE_PROJECT_ID,
   databaseId: process.env.EXPO_PUBLIC_APPWRITE_DATABASE_ID,
@@ -20,18 +21,19 @@ export const config = {
   agentsCollectionId: process.env.EXPO_PUBLIC_APPWRITE_AGENTS_COLLECTION_ID,
   propertiesCollectionId:
     process.env.EXPO_PUBLIC_APPWRITE_PROPERTIES_COLLECTION_ID,
+  bucketId: process.env.EXPO_PUBLIC_APPWRITE_BUCKET_ID,
 };
 
 export const client = new Client();
-
 client
   .setEndpoint(config.endpoint!)
   .setProject(config.projectId!)
-  .setPlatform(config.plarform!);
+  .setPlatform(config.platform!);
 
 export const avatar = new Avatars(client);
 export const account = new Account(client);
 export const databases = new Databases(client);
+export const storage = new Storage(client);
 
 export async function login() {
   try {
@@ -41,25 +43,21 @@ export async function login() {
       OAuthProvider.Google,
       redirectUri
     );
-
-    if (!response) throw new Error("Failed to login");
+    if (!response) throw new Error("Create OAuth2 token failed");
 
     const browserResult = await openAuthSessionAsync(
       response.toString(),
       redirectUri
     );
-
-    if (browserResult.type !== "success") throw new Error("Failed to login");
+    if (browserResult.type !== "success")
+      throw new Error("Create OAuth2 token failed");
 
     const url = new URL(browserResult.url);
-
     const secret = url.searchParams.get("secret")?.toString();
     const userId = url.searchParams.get("userId")?.toString();
-
-    if (!secret || !userId) throw new Error("Failed to login");
+    if (!secret || !userId) throw new Error("Create OAuth2 token failed");
 
     const session = await account.createSession(userId, secret);
-
     if (!session) throw new Error("Failed to create session");
 
     return true;
@@ -71,9 +69,8 @@ export async function login() {
 
 export async function logout() {
   try {
-    await account.deleteSession("current");
-
-    return true;
+    const result = await account.deleteSession("current");
+    return result;
   } catch (error) {
     console.error(error);
     return false;
@@ -82,18 +79,19 @@ export async function logout() {
 
 export async function getCurrentUser() {
   try {
-    const response = await account.get();
-
-    if (response.$id) {
-      const userAvatar = avatar.getInitials(response.name);
+    const result = await account.get();
+    if (result.$id) {
+      const userAvatar = avatar.getInitials(result.name);
 
       return {
-        ...response,
+        ...result,
         avatar: userAvatar.toString(),
       };
     }
+
+    return null;
   } catch (error) {
-    console.error(error);
+    console.log(error);
     return null;
   }
 }
@@ -125,11 +123,10 @@ export async function getProperties({
   try {
     const buildQuery = [Query.orderDesc("$createdAt")];
 
-    if (filter && filter !== "all") {
+    if (filter && filter !== "All")
       buildQuery.push(Query.equal("type", filter));
-    }
 
-    if (query) {
+    if (query)
       buildQuery.push(
         Query.or([
           Query.search("name", query),
@@ -137,11 +134,8 @@ export async function getProperties({
           Query.search("type", query),
         ])
       );
-    }
 
-    if (limit) {
-      buildQuery.push(Query.limit(limit));
-    }
+    if (limit) buildQuery.push(Query.limit(limit));
 
     const result = await databases.listDocuments(
       config.databaseId!,
@@ -153,5 +147,19 @@ export async function getProperties({
   } catch (error) {
     console.error(error);
     return [];
+  }
+}
+
+export async function getPropertyById({ id }: { id: string }) {
+  try {
+    const result = await databases.getDocument(
+      config.databaseId!,
+      config.propertiesCollectionId!,
+      id
+    );
+    return result;
+  } catch (error) {
+    console.error(error);
+    return null;
   }
 }

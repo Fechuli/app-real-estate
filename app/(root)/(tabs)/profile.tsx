@@ -10,7 +10,6 @@ import {
 import React from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import icons from "@/constants/icons";
-import images from "@/constants/images";
 import { settings } from "@/constants/data";
 import { useGlobalContext } from "@/lib/global-provider";
 import { logout } from "@/lib/appwrite";
@@ -76,7 +75,10 @@ const Profile = () => {
 
         <View className="flex-row justify-center mt-5">
           <View className="flex flex-col items-center relative mt-5">
-            <Image source={{uri: user?.avatar}} className="size-44 rounded-full" />
+            <Image
+              source={{ uri: user?.avatar }}
+              className="size-44 rounded-full"
+            />
             <TouchableOpacity className="absolute bottom-11 right-2">
               <Image source={icons.edit} className="size-9" />
             </TouchableOpacity>
